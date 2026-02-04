@@ -7,9 +7,16 @@ import {
 } from 'lucide-react';
 
 // --- CONFIGURATION ---
-// 🔒 SECURED: We are now pulling the key from the environment.
-// If the key is missing, we default to an empty string to prevent the build scanner from flagging it.
-const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || "";
+// 🔒 SECURED: Safe accessor for environment variables.
+// This prevents the "import.meta" crash in the preview while working correctly on Netlify.
+const getApiKey = () => {
+  try {
+    return import.meta.env.VITE_GOOGLE_API_KEY || "";
+  } catch (e) {
+    return "";
+  }
+};
+const apiKey = getApiKey();
 
 // --- GLOBAL DATA ---
 const SOCIALS = {
@@ -107,48 +114,69 @@ const callGemini = async (prompt) => {
 
 // --- SUB-COMPONENTS ---
 
-// Robust SmartImage that hunts for the correct file extension and case
+/**
+ * FIXED SMART IMAGE LOADER
+ * Aggressively tries multiple file extensions if the provided one fails.
+ * This fixes the issue where 'food1.png' might be saved as 'food1.PNG' or 'food1.jpg'.
+ */
 const SmartImage = ({ src, alt, className, lazy = true }) => {
   const [currentSrc, setCurrentSrc] = useState(src);
-  const [attemptIndex, setAttemptIndex] = useState(0);
+  const [attemptCount, setAttemptCount] = useState(0);
   const [error, setError] = useState(false);
   
-  // Variations to try in sequence if the initial load fails
-  const variations = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.webp'];
+  // Try these variations in order
+  const variations = ['', '.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.webp'];
 
   useEffect(() => {
     setCurrentSrc(src);
-    setAttemptIndex(0);
+    setAttemptCount(0);
     setError(false);
   }, [src]);
 
   const handleError = () => {
-    const baseName = src.includes('.') ? src.substring(0, src.lastIndexOf('.')) : src;
-    
-    // Iterate through variations until we find a new one to try
-    let nextIndex = attemptIndex;
-    let foundNext = false;
-    let nextSrc = "";
-
-    while (nextIndex < variations.length && !foundNext) {
-        const candidate = `${baseName}${variations[nextIndex]}`;
-        // If the candidate is different from what just failed, try it
-        if (candidate !== currentSrc) {
-            nextSrc = candidate;
-            foundNext = true;
-        }
-        nextIndex++;
-    }
-
-    if (foundNext) {
-        setCurrentSrc(nextSrc);
-        setAttemptIndex(nextIndex);
-    } else {
-        // We ran out of options
+    // Stop if we've tried everything
+    if (attemptCount >= variations.length) {
         setError(true);
+        return;
     }
+
+    // Get the base filename (e.g., "food1" from "food1.png")
+    const baseName = src.lastIndexOf('.') > 0 ? src.substring(0, src.lastIndexOf('.')) : src;
+    
+    // Construct next candidate
+    const nextExt = variations[attemptCount];
+    
+    // Skip empty string if it was the initial src (avoid infinite loop on first fail)
+    if (nextExt === '' && attemptedFirst) {
+        setAttemptCount(prev => prev + 1);
+        return;
+    }
+
+    const nextSrc = `${baseName}${nextExt}`;
+    
+    // If the next candidate is literally the same string as what just failed, skip it
+    if (nextSrc === currentSrc) {
+        setAttemptCount(prev => prev + 1);
+        // Force a re-trigger by calling handleError manually if we skip
+        // But better to just let the next render cycle handle it if we change state? 
+        // No, we need to try the next one immediately if this one matches.
+        // Simplified: Just set the next one.
+        const jumpExt = variations[attemptCount + 1];
+        if (jumpExt) {
+             setCurrentSrc(`${baseName}${jumpExt}`);
+        } else {
+             setError(true);
+        }
+    } else {
+        setCurrentSrc(nextSrc);
+    }
+    
+    setAttemptCount(prev => prev + 1);
   };
   
+  // Track if we've tried the initial src
+  const attemptedFirst = attemptCount > 0;
+
   if (error) {
       return (
           <div className={`flex flex-col items-center justify-center bg-paper text-wood-dark p-4 text-center border-2 border-dashed border-wood-dark/20 ${className}`}>
@@ -159,6 +187,7 @@ const SmartImage = ({ src, alt, className, lazy = true }) => {
       );
   }
   
+  // Ensure we are referencing root for public assets in Vite
   const finalSrc = currentSrc.startsWith('http') || currentSrc.startsWith('/') ? currentSrc : `/${currentSrc}`;
 
   return <img src={finalSrc} alt={alt} className={className} loading={lazy ? "lazy" : "eager"} onError={handleError} />;
@@ -334,6 +363,7 @@ const HomePage = ({ navigateTo, getDailyDose, isLoadingDose, dailyDose }) => (
 );
 
 const MenuPage = ({ activeCategory, setActiveCategory }) => {
+  // Mapping categories to filenames
   const categoryImageMap = {
       sandwiches: 'sandwich1.png',
       sides: 'sides1.png',
@@ -402,7 +432,7 @@ const AboutPage = () => (
   <div className="animate-in texture-burlap">
       <div className="relative h-96 w-full overflow-hidden border-b-8 border-wood-dark">
           <SmartImage src="vancouver-island-bg.png" alt="Vancouver Island Background" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-wood-dark/40 flex items-center justify-center">
+          <div className="absolute inset-0 bg-wood-dark/30 flex items-center justify-center">
               <div className="text-center border-4 border-dashed border-paper/30 p-8 bg-wood-dark/60 backdrop-blur-sm">
                   <h2 className="text-5xl font-bold text-paper tracking-tight font-serif italic">Roots Deep in the Island</h2>
               </div>
