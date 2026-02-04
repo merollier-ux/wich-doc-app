@@ -7,7 +7,14 @@ import {
 } from 'lucide-react';
 
 // --- CONFIGURATION ---
-const apiKey = "AIzaSyB4cHFBRbzHal5VcttxJBjYepuQcxhLHro"; 
+const getApiKey = () => {
+  try {
+    return import.meta.env.VITE_GOOGLE_API_KEY || "AIzaSyB4cHFBRbzHal5VcttxJBjYepuQcxhLHro";
+  } catch (e) {
+    return "AIzaSyB4cHFBRbzHal5VcttxJBjYepuQcxhLHro";
+  }
+};
+const apiKey = getApiKey();
 
 // --- GLOBAL DATA ---
 const SOCIALS = {
@@ -105,44 +112,49 @@ const callGemini = async (prompt) => {
 
 // --- SUB-COMPONENTS ---
 
-// Enhanced SmartImage that hunts for the correct file extension
+// Robust SmartImage that hunts for the correct file extension and case
 const SmartImage = ({ src, alt, className, lazy = true }) => {
   const [currentSrc, setCurrentSrc] = useState(src);
-  const [attemptCount, setAttemptCount] = useState(0);
+  const [attemptIndex, setAttemptIndex] = useState(0);
   const [error, setError] = useState(false);
   
-  // List of extensions to try in order
-  const fallbackExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.PNG', '.JPG'];
+  // Variations to try in sequence if the initial load fails
+  // This covers lowercase, uppercase, and alternative formats
+  const variations = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.webp'];
 
   useEffect(() => {
     setCurrentSrc(src);
-    setAttemptCount(0);
+    setAttemptIndex(0);
     setError(false);
   }, [src]);
 
   const handleError = () => {
-    // Get base filename
+    // Get the base filename without extension
     const baseName = src.includes('.') ? src.substring(0, src.lastIndexOf('.')) : src;
     
-    // Find the next unique extension to try
-    let nextIndex = attemptCount;
-    let nextSrc = null;
+    // Check if we have more variations to try
+    if (attemptIndex < variations.length) {
+      let nextExt = variations[attemptIndex];
+      let nextSrc = `${baseName}${nextExt}`;
 
-    // Loop until we find a new extension or run out
-    while (nextIndex < fallbackExtensions.length) {
-        const candidate = `${baseName}${fallbackExtensions[nextIndex]}`;
-        if (candidate !== currentSrc) {
-            nextSrc = candidate;
-            break;
-        }
-        nextIndex++;
-    }
-
-    if (nextSrc) {
-        setAttemptCount(nextIndex + 1); // Advance counter
-        setCurrentSrc(nextSrc);         // Try new source
+      // If the variation matches what we just tried, skip to the next one immediately
+      // This prevents the component from "giving up" if the first guess was wrong
+      let loopIndex = attemptIndex;
+      while (nextSrc === currentSrc && loopIndex < variations.length - 1) {
+          loopIndex++;
+          nextExt = variations[loopIndex];
+          nextSrc = `${baseName}${nextExt}`;
+      }
+      
+      // Update state to trigger a re-render with the new source
+      if (nextSrc !== currentSrc) {
+        setCurrentSrc(nextSrc);
+        setAttemptIndex(loopIndex + 1);
+      } else {
+        setError(true); // No more unique variations
+      }
     } else {
-        setError(true);                 // Give up
+      setError(true); // Exhausted all options
     }
   };
   
@@ -151,13 +163,15 @@ const SmartImage = ({ src, alt, className, lazy = true }) => {
           <div className={`flex flex-col items-center justify-center bg-paper text-wood-dark p-4 text-center border-2 border-dashed border-wood-dark/20 ${className}`}>
               <Image className="opacity-50 mb-2" />
               <p className="font-bold text-[10px] uppercase tracking-widest">Image Missing</p>
-              <p className="font-mono text-[8px] mt-1 opacity-70">{src}</p>
+              <p className="font-mono text-[8px] mt-1 opacity-70 break-all">{src}</p>
           </div>
       );
   }
   
-  // Vite requires root-relative paths for public folder assets
-  const finalSrc = currentSrc.startsWith('http') || currentSrc.startsWith('/') ? currentSrc : `/${currentSrc}`;
+  // Ensure we are referencing root for public assets
+  const finalSrc = currentSrc.startsWith('http') || currentSrc.startsWith('/') 
+    ? currentSrc 
+    : `/${currentSrc}`;
 
   return <img src={finalSrc} alt={alt} className={className} loading={lazy ? "lazy" : "eager"} onError={handleError} />;
 };
@@ -282,7 +296,7 @@ const ResearchSection = ({ trialRequest, setTrialRequest, runClinicalTrial, isDe
     </div>
 );
 
-// --- PAGES ---
+// --- MAIN PAGES ---
 
 const HomePage = ({ navigateTo, getDailyDose, isLoadingDose, dailyDose }) => (
   <div className="animate-in texture-burlap">
@@ -333,11 +347,12 @@ const HomePage = ({ navigateTo, getDailyDose, isLoadingDose, dailyDose }) => (
 
 const MenuPage = ({ activeCategory, setActiveCategory }) => {
   // Directly mapping correct file names to categories
+  // bread1.jpg explicitly requested
   const categoryImageMap = {
       sandwiches: 'sandwich1.png',
       sides: 'sides1.png',
       desserts: 'dessert1.png',
-      breads: 'bread1.jpg' // Specified as jpg by user
+      breads: 'bread1.jpg' 
   };
 
   const currentImage = categoryImageMap[activeCategory];
@@ -400,6 +415,7 @@ const MenuPage = ({ activeCategory, setActiveCategory }) => {
 const AboutPage = () => (
   <div className="animate-in texture-burlap">
       <div className="relative h-96 w-full overflow-hidden border-b-8 border-wood-dark">
+          {/* Vancouver Island Background with reduced opacity overlay */}
           <SmartImage src="vancouver-island-bg.png" alt="Vancouver Island Background" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-wood-dark/40 flex items-center justify-center">
               <div className="text-center border-4 border-dashed border-paper/30 p-8 bg-wood-dark/60 backdrop-blur-sm">
