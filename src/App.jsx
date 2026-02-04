@@ -7,14 +7,9 @@ import {
 } from 'lucide-react';
 
 // --- CONFIGURATION ---
-const getApiKey = () => {
-  try {
-    return import.meta.env.VITE_GOOGLE_API_KEY || "AIzaSyB4cHFBRbzHal5VcttxJBjYepuQcxhLHro";
-  } catch (e) {
-    return "AIzaSyB4cHFBRbzHal5VcttxJBjYepuQcxhLHro";
-  }
-};
-const apiKey = getApiKey();
+// 🔒 SECURED: We are now pulling the key from the environment.
+// If the key is missing, we default to an empty string to prevent the build scanner from flagging it.
+const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || "";
 
 // --- GLOBAL DATA ---
 const SOCIALS = {
@@ -78,8 +73,8 @@ const callGemini = async (prompt) => {
       await new Promise(r => setTimeout(r, 1000));
       return JSON.stringify({
           dishName: "The Placebo Effect",
-          diagnosis: "Acute Hunger Pangs",
-          reason: "You seem hungry. This sandwich is imaginary but delicious.",
+          diagnosis: "System Offline",
+          reason: "The Alchemist is currently restocking the lab. Please try again later.",
           dosage: "One large bite."
       });
   }
@@ -119,7 +114,6 @@ const SmartImage = ({ src, alt, className, lazy = true }) => {
   const [error, setError] = useState(false);
   
   // Variations to try in sequence if the initial load fails
-  // This covers lowercase, uppercase, and alternative formats
   const variations = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.webp'];
 
   useEffect(() => {
@@ -129,32 +123,29 @@ const SmartImage = ({ src, alt, className, lazy = true }) => {
   }, [src]);
 
   const handleError = () => {
-    // Get the base filename without extension
     const baseName = src.includes('.') ? src.substring(0, src.lastIndexOf('.')) : src;
     
-    // Check if we have more variations to try
-    if (attemptIndex < variations.length) {
-      let nextExt = variations[attemptIndex];
-      let nextSrc = `${baseName}${nextExt}`;
+    // Iterate through variations until we find a new one to try
+    let nextIndex = attemptIndex;
+    let foundNext = false;
+    let nextSrc = "";
 
-      // If the variation matches what we just tried, skip to the next one immediately
-      // This prevents the component from "giving up" if the first guess was wrong
-      let loopIndex = attemptIndex;
-      while (nextSrc === currentSrc && loopIndex < variations.length - 1) {
-          loopIndex++;
-          nextExt = variations[loopIndex];
-          nextSrc = `${baseName}${nextExt}`;
-      }
-      
-      // Update state to trigger a re-render with the new source
-      if (nextSrc !== currentSrc) {
+    while (nextIndex < variations.length && !foundNext) {
+        const candidate = `${baseName}${variations[nextIndex]}`;
+        // If the candidate is different from what just failed, try it
+        if (candidate !== currentSrc) {
+            nextSrc = candidate;
+            foundNext = true;
+        }
+        nextIndex++;
+    }
+
+    if (foundNext) {
         setCurrentSrc(nextSrc);
-        setAttemptIndex(loopIndex + 1);
-      } else {
-        setError(true); // No more unique variations
-      }
+        setAttemptIndex(nextIndex);
     } else {
-      setError(true); // Exhausted all options
+        // We ran out of options
+        setError(true);
     }
   };
   
@@ -168,10 +159,7 @@ const SmartImage = ({ src, alt, className, lazy = true }) => {
       );
   }
   
-  // Ensure we are referencing root for public assets
-  const finalSrc = currentSrc.startsWith('http') || currentSrc.startsWith('/') 
-    ? currentSrc 
-    : `/${currentSrc}`;
+  const finalSrc = currentSrc.startsWith('http') || currentSrc.startsWith('/') ? currentSrc : `/${currentSrc}`;
 
   return <img src={finalSrc} alt={alt} className={className} loading={lazy ? "lazy" : "eager"} onError={handleError} />;
 };
@@ -346,8 +334,6 @@ const HomePage = ({ navigateTo, getDailyDose, isLoadingDose, dailyDose }) => (
 );
 
 const MenuPage = ({ activeCategory, setActiveCategory }) => {
-  // Directly mapping correct file names to categories
-  // bread1.jpg explicitly requested
   const categoryImageMap = {
       sandwiches: 'sandwich1.png',
       sides: 'sides1.png',
@@ -415,7 +401,6 @@ const MenuPage = ({ activeCategory, setActiveCategory }) => {
 const AboutPage = () => (
   <div className="animate-in texture-burlap">
       <div className="relative h-96 w-full overflow-hidden border-b-8 border-wood-dark">
-          {/* Vancouver Island Background with reduced opacity overlay */}
           <SmartImage src="vancouver-island-bg.png" alt="Vancouver Island Background" className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-wood-dark/40 flex items-center justify-center">
               <div className="text-center border-4 border-dashed border-paper/30 p-8 bg-wood-dark/60 backdrop-blur-sm">
@@ -439,7 +424,6 @@ const AboutPage = () => (
       <section className="py-20 bg-[#f4ebd0]">
           <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center gap-12">
               <div className="md:w-1/3 p-2 bg-white border-2 border-dashed border-wood-dark shadow-xl transform -rotate-2">
-                   {/* Explicitly using chef.png here */}
                    <SmartImage src="chef.png" alt="Chef Marc" className="w-full aspect-square object-cover" />
               </div>
               <div className="md:w-2/3">
