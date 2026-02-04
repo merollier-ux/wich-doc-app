@@ -7,15 +7,19 @@ import {
 } from 'lucide-react';
 
 // --- CONFIGURATION ---
-// 🔒 SECURED: Safe accessor for environment variables.
-// This prevents the "import.meta" crash in the preview while working correctly on Netlify.
+// 🔒 SECURED: Safe accessor for environment variables to prevent build crashes
 const getApiKey = () => {
   try {
-    return import.meta.env.VITE_GOOGLE_API_KEY || "";
+    // Check if we are in a Vite environment (standard modern browser check)
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      return import.meta.env.VITE_GOOGLE_API_KEY;
+    }
   } catch (e) {
-    return "";
+    // Silently fail if env is not accessible (prevents crash in legacy builds)
   }
+  return undefined;
 };
+
 const apiKey = getApiKey();
 
 // --- GLOBAL DATA ---
@@ -74,16 +78,11 @@ const INITIAL_BLOG_POSTS = [
   { id: 3, title: "The Salami Discovery", category: "Procedures", excerpt: "Why our cold-cut selection is more than just a sandwich filler.", date: "Nov 15, 2025", image: "blog3.png", content: "Building the perfect salami profile requires more than just meat and salt; it requires patience and a specific island humidity. We've been analyzing the drying rates of our locally sourced pork to ensure every 'prescription' has the exact snap and salt content needed to spike your dopamine levels." }
 ];
 
-// --- SECURED AI LOGIC ---
+// --- STRICT AI LOGIC (No Failsafes) ---
 const callGemini = async (prompt) => {
-  if (!apiKey || apiKey === "") {
-      await new Promise(r => setTimeout(r, 1000));
-      return JSON.stringify({
-          dishName: "The Placebo Effect",
-          diagnosis: "System Offline",
-          reason: "The Alchemist is currently restocking the lab. Please try again later.",
-          dosage: "One large bite."
-      });
+  // If the key is missing, we throw an error so the user knows configuration is needed.
+  if (!apiKey) {
+      throw new Error("API Key is missing. Check your .env file locally or Netlify Environment Variables.");
   }
 
   const attempts = [
@@ -102,81 +101,70 @@ const callGemini = async (prompt) => {
                   body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
               }
           );
+          
           const data = await response.json();
-          if (response.ok) return data.candidates[0].content.parts[0].text;
-          lastError = new Error(`Model ${attempt.model} error: ${data.error?.message}`);
+          
+          if (!response.ok) {
+              throw new Error(`Google API Error (${attempt.model}): ${data.error?.message || response.statusText}`);
+          }
+          
+          return data.candidates[0].content.parts[0].text;
       } catch (e) {
+          console.warn(`Attempt failed with ${attempt.model}:`, e);
           lastError = e;
       }
   }
-  throw lastError || new Error("Connection failed across all endpoints.");
+  
+  throw lastError || new Error("Connection failed.");
 };
 
 // --- SUB-COMPONENTS ---
 
-/**
- * FIXED SMART IMAGE LOADER
- * Aggressively tries multiple file extensions if the provided one fails.
- * This fixes the issue where 'food1.png' might be saved as 'food1.PNG' or 'food1.jpg'.
- */
+// Robust SmartImage that hunts for the correct file extension and case
 const SmartImage = ({ src, alt, className, lazy = true }) => {
   const [currentSrc, setCurrentSrc] = useState(src);
-  const [attemptCount, setAttemptCount] = useState(0);
+  const [attemptIndex, setAttemptIndex] = useState(0);
   const [error, setError] = useState(false);
   
-  // Try these variations in order
-  const variations = ['', '.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.webp'];
+  // Variations to try in sequence if the initial load fails
+  // Netlify is case-sensitive, so we need to try both lowercase and uppercase variations
+  const variations = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.webp'];
 
   useEffect(() => {
     setCurrentSrc(src);
-    setAttemptCount(0);
+    setAttemptIndex(0);
     setError(false);
   }, [src]);
 
   const handleError = () => {
-    // Stop if we've tried everything
-    if (attemptCount >= variations.length) {
-        setError(true);
-        return;
-    }
+    const baseName = src.includes('.') ? src.substring(0, src.lastIndexOf('.')) : src;
+    
+    // Use a while loop to find the next *different* source immediately
+    // This prevents the component from getting stuck if the first guess is identical to the current failed src
+    let nextIndex = attemptIndex;
+    let foundNewCandidate = false;
+    let nextSrc = "";
 
-    // Get the base filename (e.g., "food1" from "food1.png")
-    const baseName = src.lastIndexOf('.') > 0 ? src.substring(0, src.lastIndexOf('.')) : src;
-    
-    // Construct next candidate
-    const nextExt = variations[attemptCount];
-    
-    // Skip empty string if it was the initial src (avoid infinite loop on first fail)
-    if (nextExt === '' && attemptedFirst) {
-        setAttemptCount(prev => prev + 1);
-        return;
-    }
-
-    const nextSrc = `${baseName}${nextExt}`;
-    
-    // If the next candidate is literally the same string as what just failed, skip it
-    if (nextSrc === currentSrc) {
-        setAttemptCount(prev => prev + 1);
-        // Force a re-trigger by calling handleError manually if we skip
-        // But better to just let the next render cycle handle it if we change state? 
-        // No, we need to try the next one immediately if this one matches.
-        // Simplified: Just set the next one.
-        const jumpExt = variations[attemptCount + 1];
-        if (jumpExt) {
-             setCurrentSrc(`${baseName}${jumpExt}`);
-        } else {
-             setError(true);
+    while (nextIndex < variations.length && !foundNewCandidate) {
+        const candidate = `${baseName}${variations[nextIndex]}`;
+        // Only attempt if this candidate path is actually different from what just failed
+        if (candidate !== currentSrc) {
+            nextSrc = candidate;
+            foundNewCandidate = true;
         }
-    } else {
-        setCurrentSrc(nextSrc);
+        nextIndex++;
     }
-    
-    setAttemptCount(prev => prev + 1);
+
+    if (foundNewCandidate) {
+        // We found a new candidate to try
+        setAttemptIndex(nextIndex);
+        setCurrentSrc(nextSrc);
+    } else {
+        // We ran out of variations
+        setError(true);
+    }
   };
   
-  // Track if we've tried the initial src
-  const attemptedFirst = attemptCount > 0;
-
   if (error) {
       return (
           <div className={`flex flex-col items-center justify-center bg-paper text-wood-dark p-4 text-center border-2 border-dashed border-wood-dark/20 ${className}`}>
@@ -187,7 +175,7 @@ const SmartImage = ({ src, alt, className, lazy = true }) => {
       );
   }
   
-  // Ensure we are referencing root for public assets in Vite
+  // Ensure we are referencing root for public assets
   const finalSrc = currentSrc.startsWith('http') || currentSrc.startsWith('/') ? currentSrc : `/${currentSrc}`;
 
   return <img src={finalSrc} alt={alt} className={className} loading={lazy ? "lazy" : "eager"} onError={handleError} />;
@@ -363,7 +351,6 @@ const HomePage = ({ navigateTo, getDailyDose, isLoadingDose, dailyDose }) => (
 );
 
 const MenuPage = ({ activeCategory, setActiveCategory }) => {
-  // Mapping categories to filenames
   const categoryImageMap = {
       sandwiches: 'sandwich1.png',
       sides: 'sides1.png',
@@ -432,7 +419,7 @@ const AboutPage = () => (
   <div className="animate-in texture-burlap">
       <div className="relative h-96 w-full overflow-hidden border-b-8 border-wood-dark">
           <SmartImage src="vancouver-island-bg.png" alt="Vancouver Island Background" className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-wood-dark/30 flex items-center justify-center">
+          <div className="absolute inset-0 bg-wood-dark/40 flex items-center justify-center">
               <div className="text-center border-4 border-dashed border-paper/30 p-8 bg-wood-dark/60 backdrop-blur-sm">
                   <h2 className="text-5xl font-bold text-paper tracking-tight font-serif italic">Roots Deep in the Island</h2>
               </div>
