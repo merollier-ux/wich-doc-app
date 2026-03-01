@@ -9,11 +9,12 @@ const Navbar = () => {
     const isActive = (path) => location.pathname === path;
 
     const navLinks = [
-        { path: '/home', label: 'Home' }, // <--- UPDATED THIS PATH
+        { path: '/home', label: 'Home' },
         { path: '/clinic', label: 'Clinic' },
         { path: '/menu', label: 'Menu' },
         { path: '/about', label: 'About Us' },
         { path: '/blog', label: 'Lab Journal' },
+        { path: '/', label: 'Links' },
     ];
 
     return (
@@ -64,9 +65,7 @@ const Navbar = () => {
                             {link.label}
                         </Link>
                     ))}
-                    <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-left font-bold text-[#f4ebd0] uppercase py-2 border-b border-dashed border-[#f4ebd0]/20 tracking-widest">
-                        Links Page
-                    </Link>
+
                 </div>
             )}
         </nav>
