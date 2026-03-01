@@ -23,10 +23,10 @@ export const callGemini = async (prompt) => {
     for (const attempt of attempts) {
         try {
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/${attempt.version}/models/${attempt.model}:generateContent?key=${apiKey}`,
+                `https://generativelanguage.googleapis.com/${attempt.version}/models/${attempt.model}:generateContent`,
                 {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 }
             );
