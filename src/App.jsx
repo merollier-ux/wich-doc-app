@@ -1,10 +1,10 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
+import Links from './pages/Links'; // eager — critical first render
 
-const Links  = lazy(() => import('./pages/Links'));
 const Home   = lazy(() => import('./pages/Home'));
 const Menu   = lazy(() => import('./pages/Menu'));
 const Clinic = lazy(() => import('./pages/Clinic'));
@@ -17,37 +17,35 @@ const PageLoader = () => (
     </div>
 );
 
+const MainLayout = () => (
+    <>
+        <Navbar />
+        <main className="flex-grow">
+            <Suspense fallback={<PageLoader />}>
+                <Outlet />
+            </Suspense>
+        </main>
+        <Footer />
+    </>
+);
+
 function App() {
     return (
         <Router>
             <ErrorBoundary>
                 <div className="flex flex-col min-h-screen">
                     <Routes>
-                        {/* Landing Page */}
-                        <Route path="/" element={
-                            <Suspense fallback={<PageLoader />}>
-                                <Links />
-                            </Suspense>
-                        } />
+                        {/* Landing page — exact match, no wildcard ambiguity */}
+                        <Route path="/" element={<Links />} />
 
-                        {/* Main App Routes */}
-                        <Route path="/*" element={
-                            <>
-                                <Navbar />
-                                <main className="flex-grow">
-                                    <Suspense fallback={<PageLoader />}>
-                                        <Routes>
-                                            <Route path="/home"   element={<Home />} />
-                                            <Route path="/menu"   element={<Menu />} />
-                                            <Route path="/clinic" element={<Clinic />} />
-                                            <Route path="/about"  element={<About />} />
-                                            <Route path="/blog"   element={<Blog />} />
-                                        </Routes>
-                                    </Suspense>
-                                </main>
-                                <Footer />
-                            </>
-                        } />
+                        {/* Main app — layout route provides Navbar + Footer via Outlet */}
+                        <Route element={<MainLayout />}>
+                            <Route path="/home"   element={<Home />} />
+                            <Route path="/menu"   element={<Menu />} />
+                            <Route path="/clinic" element={<Clinic />} />
+                            <Route path="/about"  element={<About />} />
+                            <Route path="/blog"   element={<Blog />} />
+                        </Route>
                     </Routes>
                 </div>
             </ErrorBoundary>

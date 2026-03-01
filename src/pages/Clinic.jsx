@@ -123,7 +123,7 @@ const Clinic = () => {
             setPrescription(JSON.parse(cleanText));
         } catch (err) {
             console.error(err);
-            alert("Consultation temporarily unavailable.");
+            alert(`Consultation error: ${err.message}`);
         } finally {
             setIsDiagnosing(false);
         }
@@ -142,7 +142,7 @@ const Clinic = () => {
             setTrialResult(JSON.parse(cleanText));
         } catch (err) {
             console.error(err);
-            alert("Lab temporarily offline.");
+            alert(`Lab error: ${err.message}`);
         } finally {
             setIsDeveloping(false);
         }
