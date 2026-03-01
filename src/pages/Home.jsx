@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Stethoscope, Sparkles, Camera } from 'lucide-react';
 import SmartImage from '../components/SmartImage';
-import { callGemini } from '../services/gemini';
+import { callAI } from '../services/gemini';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -12,7 +12,7 @@ const Home = () => {
     const getDailyDose = async () => {
         setIsLoadingDose(true);
         try {
-            const advice = await callGemini("Give me a short, witty medical-themed advice about eating sandwiches or bread. Max 1 sentence.");
+            const advice = await callAI("Give me a short, witty medical-themed advice about eating sandwiches or bread. Max 1 sentence. Reply with only the sentence — no quotes, no extra text.");
             setDailyDose(advice);
         } catch (err) {
             setDailyDose("A sandwich a day keeps the hunger away.");

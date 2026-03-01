@@ -1,4 +1,4 @@
-export const callGemini = async (prompt) => {
+export const callAI = async (prompt) => {
     const response = await fetch('/.netlify/functions/claude', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

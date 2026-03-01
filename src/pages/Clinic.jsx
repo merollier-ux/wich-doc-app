@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Activity, Loader, Clock, AlertTriangle, FlaskConical, TestTube, Sparkles } from 'lucide-react';
-import { callGemini } from '../services/gemini';
+import { callAI } from '../services/gemini';
 import { menuData } from '../data';
 
 // --- Sub-Component: Triage Section ---
@@ -87,8 +87,8 @@ const ResearchSection = ({ trialRequest, setTrialRequest, runClinicalTrial, isDe
                     ) : (
                         <div className="animate-in font-mono text-[#f4ebd0] space-y-6">
                             <div className="border-b border-dashed border-[#f4ebd0]/30 pb-4"><p className="text-[10px] text-[#c05621] uppercase tracking-widest mb-1 flame-1">Subject Name</p><h3 className="text-2xl font-bold text-white font-serif">{trialResult.name}</h3></div>
-                            <div><p className="text-[10px] text-white/50 uppercase tracking-widest mb-1">Compound Analysis</p><p className="text-sm">{trialResult.ingredients}</p></div>
-                            <div className="bg-black/20 p-4 rounded border-l-4 border-[#c05621]"><p className="text-[10px] text-white/50 uppercase tracking-widest mb-1">Procedure</p><p className="text-sm italic">"{trialResult.description}"</p></div>
+                            <div><p className="text-[10px] text-white/50 uppercase tracking-widest mb-1">Compound Analysis</p><p className="text-sm whitespace-pre-line">{trialResult.ingredients}</p></div>
+                            <div className="bg-black/20 p-4 rounded border-l-4 border-[#c05621]"><p className="text-[10px] text-white/50 uppercase tracking-widest mb-1">Procedure</p><p className="text-sm italic whitespace-pre-line">"{trialResult.description}"</p></div>
                             <div className="mt-auto pt-4 flex items-start gap-3 text-[#c05621] flame-3"><AlertTriangle size={16} className="shrink-0 mt-0.5" /><p className="text-xs font-bold">{trialResult.warning}</p></div>
                         </div>
                     )}
@@ -117,13 +117,13 @@ const Clinic = () => {
         const prompt = `You are 'The Wich Doc', a witty medical-themed sandwich shop. A patient says: "${symptomInput}". Select exactly ONE item from this menu: ${JSON.stringify(menuData)}. Reply with ONLY a JSON object — no markdown, no extra text — using these fields: dishName (exact menu item name), diagnosis (short humorous medical phrase), reason (one prose sentence explaining why this cures the symptoms), dosage (funny serving instruction like "Two bites every 4 hours").`;
         
         try {
-            const text = await callGemini(prompt);
+            const text = await callAI(prompt);
             // Clean markdown code blocks if present
             const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
             setPrescription(JSON.parse(cleanText));
         } catch (err) {
             console.error(err);
-            alert(`Consultation error: ${err.message}`);
+            alert("Consultation temporarily unavailable. Please try again.");
         } finally {
             setIsDiagnosing(false);
         }
@@ -134,15 +134,15 @@ const Clinic = () => {
         if (!trialRequest.trim()) return;
         setIsDeveloping(true); setTrialResult(null);
         
-        const prompt = `Invent a medical-themed gourmet creation (sandwich, pastry, or dessert) based on: "${trialRequest}". Return JSON only: {name, ingredients, description, warning}`;
+        const prompt = `You are 'The Wich Doc', a mad scientist of gourmet sandwich craft. A customer craves: "${trialRequest}". Invent a completely original, medical-themed gourmet creation (sandwich, pastry, or dessert). Reply with ONLY a JSON object — no markdown, no extra text — using these fields: name (creative medical-themed dish name), ingredients (a single comma-separated string of 4-6 key ingredients), description (one prose sentence describing the dish's flavors and concept), warning (one funny medical-themed disclaimer sentence).`;
         
         try {
-            const text = await callGemini(prompt);
+            const text = await callAI(prompt);
             const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
             setTrialResult(JSON.parse(cleanText));
         } catch (err) {
             console.error(err);
-            alert(`Lab error: ${err.message}`);
+            alert("Lab temporarily offline. Please try again.");
         } finally {
             setIsDeveloping(false);
         }
