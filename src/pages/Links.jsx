@@ -39,9 +39,12 @@ const Links = () => {
                         </a>
                     </div>
 
-                    <div className="pt-8">
-                        <a href={`mailto:${SOCIALS.email}`} className="block w-full py-5 bg-[#152238] text-[#f4ebd0] rounded font-bold hover:bg-[#1e293b] transition-all shadow-md border-t-4 border-[#1a110d] uppercase tracking-widest text-sm flex items-center justify-center gap-2 bg-denim-patch flame-3 cursor-pointer">
-                            <Lock size={16} /> Order Securely
+                    <div className="pt-8 grid grid-cols-2 gap-4">
+                        <a href={SOCIALS.order} target="_blank" rel="noreferrer" className="py-5 bg-[#152238] text-[#f4ebd0] rounded font-bold hover:bg-[#1e293b] transition-all shadow-md border-t-4 border-[#1a110d] uppercase tracking-widest text-sm flex items-center justify-center gap-2 bg-denim-patch flame-3 cursor-pointer">
+                            <Lock size={16} /> Order Bread
+                        </a>
+                        <a href={SOCIALS.membership} target="_blank" rel="noreferrer" className="py-5 bg-[#c05621] text-white rounded font-bold hover:bg-[#a84615] transition-all shadow-md border-t-4 border-[#1a110d] uppercase tracking-widest text-sm flex items-center justify-center gap-2 flame-2 cursor-pointer">
+                            <Lock size={16} /> Membership
                         </a>
                     </div>
                 </div>

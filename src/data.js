@@ -1,7 +1,9 @@
 export const SOCIALS = {
     ig: "https://www.instagram.com/wichdocbakeshop/",
     fb: "https://www.facebook.com/profile.php?id=100088206555550",
-    email: "chef@wichdocbakeshop.ca"
+    email: "chef@wichdocbakeshop.ca",
+    order: "https://square.link/u/oOoK6FRG",
+    membership: "https://square.link/u/lMRPXBKw"
 };
 
 export const menuData = {
