@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChefHat, Menu, X } from 'lucide-react';
+import { useAuth } from '../context/Authcontext';
 
 const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
+    const { user } = useAuth();
 
     const isActive = (path) => location.pathname === path;
 
@@ -15,6 +17,7 @@ const Navbar = () => {
         { path: '/about', label: 'About Us' },
         { path: '/blog', label: 'Lab Journal' },
         { path: '/', label: 'Links' },
+        { path: user ? '/dashboard' : '/portal', label: user ? 'Dashboard' : 'Portal' },
     ];
 
     return (

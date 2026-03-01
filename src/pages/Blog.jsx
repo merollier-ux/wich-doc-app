@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { ArrowRight, X } from 'lucide-react';
+import { ArrowRight, X, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SmartImage from '../components/SmartImage';
 import { initialBlogPosts } from '../data';
+import { useAuth } from '../context/Authcontext';
 
 const BlogModal = ({ post, onClose }) => {
     if (!post) return null;
@@ -29,6 +31,13 @@ const BlogModal = ({ post, onClose }) => {
 
 const Blog = () => {
     const [selectedPost, setSelectedPost] = useState(null);
+    const { userProfile } = useAuth();
+    const isMember = userProfile?.isMember;
+
+    const handlePostClick = (post) => {
+        if (post.memberOnly && !isMember) return;
+        setSelectedPost(post);
+    };
 
     return (
         <div className="max-w-4xl mx-auto p-12 text-center space-y-12 animate-in texture-burlap min-h-screen">
@@ -38,22 +47,42 @@ const Blog = () => {
                 <p className="text-[#c05621] font-mono text-xs uppercase tracking-widest flame-1">Field Notes from the Alchemist</p>
             </div>
             <div className="grid gap-12">
-                {initialBlogPosts.map(post => (
-                    <div key={post.id} onClick={() => setSelectedPost(post)} className="bg-white border-2 border-[#1a110d] p-2 hover:shadow-xl transition-all cursor-pointer group text-left transform hover:-rotate-1">
-                        <div className="border border-dashed border-[#1a110d]/30 p-6 flex flex-col md:flex-row gap-6">
-                            <div className="md:w-1/3 h-48 md:h-auto bg-stone-200 relative">
-                                <div className="absolute top-0 left-0 bg-[#c05621] text-white text-[10px] font-bold px-2 py-1 z-10 flame-2">{post.category}</div>
-                                <SmartImage src={`/${post.image}`} alt={post.title} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="md:w-2/3 flex flex-col justify-center">
-                                <span className="text-[10px] font-bold text-[#1a110d]/50 uppercase tracking-widest mb-2">{post.date}</span>
-                                <h3 className="text-2xl font-serif font-bold text-[#1a110d] mb-3 group-hover:text-[#c05621] transition-colors">{post.title}</h3>
-                                <p className="text-stone-600 text-sm leading-relaxed mb-4">"{post.excerpt}"</p>
-                                <span className="text-[#c05621] font-bold text-xs uppercase tracking-wide flex items-center gap-2 flame-3">Read Entry <ArrowRight size={14}/></span>
+                {initialBlogPosts.map(post => {
+                    const locked = post.memberOnly && !isMember;
+                    return (
+                        <div
+                            key={post.id}
+                            onClick={() => handlePostClick(post)}
+                            className={`bg-white border-2 border-[#1a110d] p-2 transition-all text-left transform ${locked ? 'cursor-default opacity-80' : 'hover:shadow-xl cursor-pointer group hover:-rotate-1'}`}
+                        >
+                            <div className="border border-dashed border-[#1a110d]/30 p-6 flex flex-col md:flex-row gap-6 relative">
+                                <div className="md:w-1/3 h-48 md:h-auto bg-stone-200 relative">
+                                    <div className="absolute top-0 left-0 bg-[#c05621] text-white text-[10px] font-bold px-2 py-1 z-10 flame-2">{post.category}</div>
+                                    <SmartImage src={`/${post.image}`} alt={post.title} className={`w-full h-full object-cover ${locked ? 'blur-sm' : ''}`} />
+                                </div>
+                                <div className="md:w-2/3 flex flex-col justify-center">
+                                    <span className="text-[10px] font-bold text-[#1a110d]/50 uppercase tracking-widest mb-2">{post.date}</span>
+                                    <h3 className="text-2xl font-serif font-bold text-[#1a110d] mb-3 group-hover:text-[#c05621] transition-colors">{post.title}</h3>
+                                    {locked ? (
+                                        <div className="space-y-3">
+                                            <p className="text-stone-400 text-sm leading-relaxed italic">"{post.excerpt}"</p>
+                                            <div className="flex items-center gap-2 bg-[#1a110d] text-[#f4ebd0] px-4 py-3 rounded inline-flex w-fit">
+                                                <Lock size={12} />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Member Exclusive —</span>
+                                                <Link to="/portal" onClick={e => e.stopPropagation()} className="text-[10px] font-bold uppercase tracking-widest text-[#c05621] hover:underline flame-1">Join to read</Link>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p className="text-stone-600 text-sm leading-relaxed mb-4">"{post.excerpt}"</p>
+                                            <span className="text-[#c05621] font-bold text-xs uppercase tracking-wide flex items-center gap-2 flame-3">Read Entry <ArrowRight size={14}/></span>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
