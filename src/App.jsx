@@ -4,7 +4,6 @@ import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
-import InstallPrompt from './components/InstallPrompt';
 import Links from './pages/Links'; // eager — critical first render
 import Portal from './pages/Portal'; // eager — auth-critical
 
@@ -55,7 +54,6 @@ function App() {
                     <Route path="/order"     element={<WithLayout><Order /></WithLayout>} />
                     <Route path="/catering"  element={<WithLayout><Catering /></WithLayout>} />
                 </Routes>
-                <InstallPrompt />
             </ErrorBoundary>
         </Router>
     );
