@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -17,37 +17,30 @@ const PageLoader = () => (
     </div>
 );
 
-const MainLayout = () => (
-    <>
+const WithLayout = ({ children }) => (
+    <div className="flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow">
             <Suspense fallback={<PageLoader />}>
-                <Outlet />
+                {children}
             </Suspense>
         </main>
         <Footer />
-    </>
+    </div>
 );
 
 function App() {
     return (
         <Router>
             <ErrorBoundary>
-                <div className="flex flex-col min-h-screen">
-                    <Routes>
-                        {/* Landing page — exact match, no wildcard ambiguity */}
-                        <Route path="/" element={<Links />} />
-
-                        {/* Main app — layout route provides Navbar + Footer via Outlet */}
-                        <Route element={<MainLayout />}>
-                            <Route path="/home"   element={<Home />} />
-                            <Route path="/menu"   element={<Menu />} />
-                            <Route path="/clinic" element={<Clinic />} />
-                            <Route path="/about"  element={<About />} />
-                            <Route path="/blog"   element={<Blog />} />
-                        </Route>
-                    </Routes>
-                </div>
+                <Routes>
+                    <Route path="/"       element={<Links />} />
+                    <Route path="/home"   element={<WithLayout><Home /></WithLayout>} />
+                    <Route path="/menu"   element={<WithLayout><Menu /></WithLayout>} />
+                    <Route path="/clinic" element={<WithLayout><Clinic /></WithLayout>} />
+                    <Route path="/about"  element={<WithLayout><About /></WithLayout>} />
+                    <Route path="/blog"   element={<WithLayout><Blog /></WithLayout>} />
+                </Routes>
             </ErrorBoundary>
         </Router>
     );
