@@ -46,7 +46,7 @@ const TriageSection = ({ symptomInput, setSymptomInput, handleConsultation, isDi
                             <div className="space-y-4 mb-8">
                                 <div><p className="text-xs text-[#152238] uppercase font-bold">Diagnosis</p><p className="text-lg font-bold text-[#1a110d]">{prescription.diagnosis}</p></div>
                                 <div><p className="text-xs text-[#152238] uppercase font-bold">Treatment</p><p className="text-2xl font-bold text-[#c05621] flame-3">{prescription.dishName}</p></div>
-                                <div><p className="text-xs text-[#152238] uppercase font-bold">Clinical Reasoning</p><p className="italic text-stone-600">"{prescription.reason}"</p></div>
+                                <div><p className="text-xs text-[#152238] uppercase font-bold">Clinical Reasoning</p><p className="italic text-stone-600 whitespace-pre-line">"{prescription.reason}"</p></div>
                             </div>
                             <div className="flex items-center gap-2 text-sm font-bold text-[#1a110d] border-t border-dashed border-[#1a110d]/30 pt-4">
                                 <Clock size={14} /> Dosage: {prescription.dosage}
@@ -114,7 +114,7 @@ const Clinic = () => {
         if (!symptomInput.trim()) return;
         setIsDiagnosing(true); setPrescription(null);
         
-        const prompt = `Act as 'The Wich Doc'. Based on: "${symptomInput}", prescribe one item from: ${JSON.stringify(menuData)}. Return JSON only: {dishName, diagnosis, reason, dosage}`;
+        const prompt = `You are 'The Wich Doc', a witty medical-themed sandwich shop. A patient says: "${symptomInput}". Select exactly ONE item from this menu: ${JSON.stringify(menuData)}. Reply with ONLY a JSON object — no markdown, no extra text — using these fields: dishName (exact menu item name), diagnosis (short humorous medical phrase), reason (one prose sentence explaining why this cures the symptoms), dosage (funny serving instruction like "Two bites every 4 hours").`;
         
         try {
             const text = await callGemini(prompt);
