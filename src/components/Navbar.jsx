@@ -6,7 +6,7 @@ import { useAuth } from '../context/Authcontext';
 const Navbar = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
-    const { user } = useAuth();
+    const { user, userProfile } = useAuth();
 
     const isActive = (path) => location.pathname === path;
 
@@ -16,6 +16,7 @@ const Navbar = () => {
         { path: '/menu', label: 'Menu' },
         { path: '/about', label: 'About Us' },
         { path: '/blog', label: 'Lab Journal' },
+        ...(userProfile?.isMember ? [{ path: '/recipes', label: 'Rx Vault' }] : []),
         { path: '/', label: 'Links' },
         { path: user ? '/dashboard' : '/portal', label: user ? 'Dashboard' : 'Portal' },
     ];

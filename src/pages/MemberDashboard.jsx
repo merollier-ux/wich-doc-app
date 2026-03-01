@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
-import { UserCircle, ShieldCheck, LogOut, Lock, Star } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { UserCircle, ShieldCheck, LogOut, Lock, Star, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/Authcontext';
 import { SOCIALS } from '../data';
 
@@ -51,8 +51,13 @@ const MemberDashboard = () => {
                             </h3>
                         </div>
                         <ul className="p-8 space-y-3">
+                            <li className="flex items-start gap-3 text-sm text-[#1a110d]">
+                                <span className="text-[#c05621] flame-1 mt-0.5">✦</span>
+                                <Link to="/recipes" className="font-bold text-[#c05621] hover:underline flex items-center gap-1 flame-2">
+                                    The Rx Vault — exclusive recipes <ArrowRight size={12} />
+                                </Link>
+                            </li>
                             {[
-                                'Exclusive recipes & behind-the-scenes lab posts',
                                 'Early access to new menu items',
                                 'Member-only Lab Journal entries',
                                 'Priority order status updates',

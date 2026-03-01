@@ -13,6 +13,7 @@ const Clinic          = lazy(() => import('./pages/Clinic'));
 const About           = lazy(() => import('./pages/About'));
 const Blog            = lazy(() => import('./pages/Blog'));
 const MemberDashboard = lazy(() => import('./pages/MemberDashboard'));
+const Recipes         = lazy(() => import('./pages/Recipes'));
 
 const PageLoader = () => (
     <div className="flex items-center justify-center min-h-screen bg-[#1a110d] text-[#f4ebd0] text-sm tracking-widest uppercase opacity-60">
@@ -45,6 +46,7 @@ function App() {
                     <Route path="/blog"      element={<WithLayout><Blog /></WithLayout>} />
                     <Route path="/portal"   element={<Portal />} />
                     <Route path="/dashboard" element={<WithLayout><ProtectedRoute><MemberDashboard /></ProtectedRoute></WithLayout>} />
+                    <Route path="/recipes"   element={<WithLayout><ProtectedRoute requireMember={true}><Recipes /></ProtectedRoute></WithLayout>} />
                 </Routes>
             </ErrorBoundary>
         </Router>
