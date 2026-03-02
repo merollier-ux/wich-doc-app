@@ -39,13 +39,17 @@ export const menuData = {
         { name: "Caesar Potatoes", subtitle: "Warning: Habit Forming", description: "Fried new potatoes tossed in Caesar dressing, bacon, and Parm.", tag: "Must Try" }
     ],
     desserts: [
-        { name: "The Local Anesthetic", subtitle: "Nanaimo Bar Cheesecake", description: "Dark cocoa crumb, custard mousse, and semi-sweet ganache in a jar.", tag: "Local Fav" },
-        { name: "The Midnight Shift", subtitle: "Banoffee Mini Loaf", description: "Chocolate chip loaf with molten dulce de leche and candied walnuts.", tag: "Decadent" }
+        { name: "Cheesecake Jar", subtitle: "The Local Anesthetic", description: "Dark cocoa crumb, custard mousse, and semi-sweet ganache in a jar.", tag: "Local Fav" },
+        { name: "Midnight Banoffee Loaf", subtitle: "The Midnight Shift", description: "Chocolate chip loaf with molten dulce de leche and candied walnuts.", tag: "Decadent" },
+        { name: "Pecan sticky Buns", subtitle: "Caramelized Pull-Apart", description: "Yeasted buns drenched in buttery pecan caramel sauce, baked until golden and impossibly sticky.", tag: "Weekend Special" },
+        { name: "Big Bad Brownie", subtitle: "Dark Chocolate Fudge", description: "Dense, intensely dark brownie with a crinkle top and fudgy center. Not for the faint of heart.", tag: "Indulgent" }
     ],
     breads: [
-        { name: "Garlic & Za'atar Focaccia", subtitle: "Italian Flatbread", description: "Dimpled dough with caramelized onions and roasted garlic.", tag: "Fresh" },
-        { name: "Doc's Farmers Loaf", subtitle: "Signature Sourdough", description: "Thick crust, airy crumb. Six-fold mixing technique.", tag: "Artisan" },
-        { name: "Cheesy Milk Buns (4-Pack)", subtitle: "Hokkaido Style", description: "Incredibly fluffy rolls enriched with cream and cheddar.", tag: "Kids Choice" }
+        { name: "Caramelized Onion & Zataar Focaccia", subtitle: "Italian Flatbread", description: "Dimpled dough layered with sweet caramelized onions and fragrant za'atar herb blend.", tag: "Fresh" },
+        { name: "Red Fife & Cheddar Farmer's Loaf", subtitle: "Heritage Grain Sourdough", description: "Ancient Red Fife wheat slow-fermented with our sourdough culture and studded with aged cheddar.", tag: "Artisan" },
+{ name: "Shokupan Loaf", subtitle: "Japanese Milk Bread", description: "Pillowy-soft Japanese-style white bread enriched with milk and butter — a perfect everyday loaf.", tag: "Soft" },
+        { name: "Horst's Black Pumpernickel", subtitle: "Old World Rye", description: "Dense, dark German-style rye with deep earthy flavour and a long fermentation. Named for the man who inspired it.", tag: "Traditional" },
+        { name: "Ancient Egyptian Aish Baladi", subtitle: "Whole Wheat Flatbread", description: "Traditional Egyptian flatbread made with whole wheat and baked at extreme heat for a classic pocket and char.", tag: "Ancient Grain" }
     ]
 };
 

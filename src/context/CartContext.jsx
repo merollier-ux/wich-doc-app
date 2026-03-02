@@ -4,6 +4,8 @@ const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
     const [cartItems, setCartItems] = useState([]);
+    const [cartOpen, setCartOpen] = useState(false);
+    const [checkoutOpen, setCheckoutOpen] = useState(false);
 
     const addItem = (item) => {
         // item: { id, variationId, name, priceCents }
@@ -27,11 +29,18 @@ export const CartProvider = ({ children }) => {
 
     const clearCart = () => setCartItems([]);
 
+    const openCheckout = () => { setCartOpen(false); setCheckoutOpen(true); };
+
     const cartTotal = cartItems.reduce((sum, i) => sum + i.priceCents * i.qty, 0);
     const itemCount  = cartItems.reduce((sum, i) => sum + i.qty, 0);
 
     return (
-        <CartContext.Provider value={{ cartItems, cartTotal, itemCount, addItem, removeItem, clearCart }}>
+        <CartContext.Provider value={{
+            cartItems, cartTotal, itemCount,
+            addItem, removeItem, clearCart,
+            cartOpen, setCartOpen,
+            checkoutOpen, setCheckoutOpen, openCheckout,
+        }}>
             {children}
         </CartContext.Provider>
     );

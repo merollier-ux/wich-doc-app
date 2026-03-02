@@ -17,7 +17,7 @@ export const handler = async (event) => {
     }
 
     const token = process.env.SQUARE_ACCESS_TOKEN;
-    const locationId = process.env.SQUARE_LOCATION_ID;
+    const locationId = process.env.VITE_SQUARE_LOCATION_ID || process.env.SQUARE_LOCATION_ID;
     if (!token || !locationId) {
         return { statusCode: 500, body: JSON.stringify({ error: 'Square not configured' }) };
     }

@@ -1,15 +1,13 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChefHat, Menu, X, Lock, ShoppingBag, UserCircle, Utensils, Star } from 'lucide-react';
+import { ChefHat, X, Lock, ShoppingBag, UserCircle, Utensils, Star } from 'lucide-react';
+
 import { useAuth } from '../context/Authcontext';
 import { SOCIALS } from '../data';
 
-const Sidebar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+const Sidebar = ({ isOpen, onClose }) => {
     const location = useLocation();
     const { user, userProfile } = useAuth();
 
-    const close = () => setIsOpen(false);
     const isActive = (path) => location.pathname === path;
 
     const navLinks = [
@@ -22,27 +20,17 @@ const Sidebar = () => {
     ];
 
     const incomeLinks = [
-        { path: '/order',    label: 'Order Online', icon: ShoppingBag },
-        { path: '/shop',     label: 'Shop',          icon: Star },
-        { path: '/catering', label: 'Catering',      icon: Utensils },
+        { path: '/shop',     label: 'Shop',     icon: Star },
+        { path: '/catering', label: 'Catering', icon: Utensils },
     ];
 
     return (
         <>
-            {/* Hamburger toggle — always visible */}
-            <button
-                onClick={() => setIsOpen(true)}
-                className="fixed top-5 left-5 z-40 p-3 bg-[#1a110d] text-[#f4ebd0] rounded-lg shadow-xl hover:bg-[#c05621] transition-colors border border-[#c05621]/30 cursor-pointer"
-                aria-label="Open menu"
-            >
-                <Menu size={20} />
-            </button>
-
             {/* Backdrop */}
             {isOpen && (
                 <div
                     className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-                    onClick={close}
+                    onClick={onClose}
                 />
             )}
 
@@ -51,7 +39,7 @@ const Sidebar = () => {
 
                 {/* Panel header */}
                 <div className="flex items-center justify-between px-5 py-5 border-b border-[#c05621]/20">
-                    <Link to="/home" onClick={close} className="flex items-center gap-3 group">
+                    <Link to="/home" onClick={onClose} className="flex items-center gap-3 group">
                         <div className="bg-[#c05621] p-1.5 rounded-full border-2 border-[#f4ebd0]/20 group-hover:rotate-12 transition-transform flame-2">
                             <ChefHat className="h-5 w-5 text-white" />
                         </div>
@@ -60,7 +48,7 @@ const Sidebar = () => {
                             <span className="text-[8px] text-[#f4ebd0]/50 uppercase tracking-[0.2em]">Bake Shop</span>
                         </div>
                     </Link>
-                    <button onClick={close} className="text-[#f4ebd0]/50 hover:text-[#f4ebd0] transition-colors cursor-pointer p-1">
+                    <button onClick={onClose} className="text-[#f4ebd0]/50 hover:text-[#f4ebd0] transition-colors cursor-pointer p-1">
                         <X size={18} />
                     </button>
                 </div>
@@ -72,7 +60,7 @@ const Sidebar = () => {
                         <Link
                             key={link.path}
                             to={link.path}
-                            onClick={close}
+                            onClick={onClose}
                             className={`flex items-center px-3 py-3 rounded font-bold uppercase text-xs tracking-widest transition-colors ${
                                 isActive(link.path)
                                     ? 'bg-[#c05621]/20 text-[#c05621] flame-1'
@@ -97,7 +85,7 @@ const Sidebar = () => {
                             <Link
                                 key={link.path}
                                 to={link.path}
-                                onClick={close}
+                                onClick={onClose}
                                 className={`flex items-center gap-2 px-3 py-3 rounded font-bold uppercase text-xs tracking-widest transition-colors ${
                                     isActive(link.path)
                                         ? 'bg-[#c05621]/20 text-[#c05621] flame-1'
@@ -113,7 +101,7 @@ const Sidebar = () => {
                         href={SOCIALS.membership}
                         target="_blank"
                         rel="noreferrer"
-                        onClick={close}
+                        onClick={onClose}
                         className="flex items-center gap-2 px-3 py-3 rounded font-bold uppercase text-xs tracking-widest text-[#c05621] hover:text-[#e06030] transition-colors flame-3"
                     >
                         <Lock size={11} /> Membership
@@ -124,7 +112,7 @@ const Sidebar = () => {
                 <div className="border-t border-[#c05621]/20 p-4">
                     <Link
                         to={user ? '/dashboard' : '/portal'}
-                        onClick={close}
+                        onClick={onClose}
                         className="flex items-center justify-center gap-2 w-full py-3 bg-[#152238] text-[#f4ebd0] rounded font-bold text-xs uppercase tracking-widest hover:bg-[#1e293b] transition-colors border border-[#c05621]/20 bg-denim-patch"
                     >
                         <UserCircle size={14} />

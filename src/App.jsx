@@ -1,7 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import Header from './components/Header';
 import Footer from './components/Footer';
+import CartOverlay from './components/CartOverlay';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import InstallPrompt from './components/InstallPrompt';
@@ -25,17 +27,23 @@ const PageLoader = () => (
     </div>
 );
 
-const WithLayout = ({ children }) => (
-    <div className="flex flex-col min-h-screen">
-        <Sidebar />
-        <main className="flex-grow pt-16">
-            <Suspense fallback={<PageLoader />}>
-                {children}
-            </Suspense>
-        </main>
-        <Footer />
-    </div>
-);
+const WithLayout = ({ children }) => {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Header onOpenSidebar={() => setSidebarOpen(true)} />
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            <CartOverlay />
+            <main className="flex-grow pt-16">
+                <Suspense fallback={<PageLoader />}>
+                    {children}
+                </Suspense>
+            </main>
+            <Footer />
+        </div>
+    );
+};
 
 function App() {
     return (

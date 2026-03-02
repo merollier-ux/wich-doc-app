@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingBag, Download, Gift, Star, Package, ChefHat, BookOpen, Sparkles, ExternalLink, Tag } from 'lucide-react';
+import { ShoppingBag, Download, Gift, Star, Package, ChefHat, BookOpen, Sparkles, ExternalLink } from 'lucide-react';
 import { SOCIALS } from '../data';
 
 const DIGITAL_PRODUCTS = [
@@ -136,14 +136,9 @@ const ProductCard = ({ product }) => {
                             <span className="text-sm text-[#1a110d]/40 line-through ml-2">{product.originalPrice}</span>
                         )}
                     </div>
-                    <a
-                        href={product.link}
-                        target={product.internal ? '_self' : '_blank'}
-                        rel="noreferrer"
-                        className="flex items-center gap-1 px-5 py-2 bg-[#c05621] text-white text-xs font-bold uppercase tracking-widest rounded hover:bg-[#a84615] transition-colors"
-                    >
-                        <Download size={12} /> {product.cta}
-                    </a>
+                    <span className="flex items-center gap-1 px-5 py-2 bg-[#1a110d]/10 text-[#1a110d]/40 text-xs font-bold uppercase tracking-widest rounded cursor-not-allowed select-none">
+                        Coming Soon
+                    </span>
                 </div>
             </div>
         </div>
